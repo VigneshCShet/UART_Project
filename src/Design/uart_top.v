@@ -8,8 +8,8 @@ module top_uart #(parameter data_width = 8, baud_rate = 2400, clk_freq = 5000000
   wire synch_in;
   wire baud_clk;
   synchronizer u4 (.clk(sys_clk), .rst(sys_rst_l), .sin(uart_REC_dataH), .sout(synch_in));
-  baud_clk u3 #(.baud_rate(baud_rate), .clk_freq(clk_freq))(.clk(sys_clk), .rst(sys_rst_l), .clk_out(baud_clk));
-  xmit u1 #(.data_width(data_width))(.baud_clk(baud_clk), .sys_rst_l(sys_rst_l), .xmitH(xmitH), .xmit_dataH(xmit_dataH), .uart_XMIT_dataH(uart_XMIT_dataH), .xmit_doneH(xmit_doneH), .xmit_active(xmit_active));
-  rec u2 #(.data_width(data_width))(.clk(baud_clk), .rst(sys_rst_l), .data_in(synch_in), .rec_readyH(rec_readyH), .rec_dataH(rec_dataH), .rec_busyH(rec_busy));
+  baud_clk  #(.baud_rate(baud_rate), .clk_freq(clk_freq)) u3 (.clk(sys_clk), .rst(sys_rst_l), .clk_out(baud_clk));
+  xmit  #(.data_width(data_width)) u1 (.baud_clk(baud_clk), .sys_rst_l(sys_rst_l), .xmitH(xmitH), .xmit_dataH(xmit_dataH), .uart_XMIT_dataH(uart_XMIT_dataH), .xmit_doneH(xmit_doneH), .xmit_active(xmit_active));
+  rec  #(.data_width(data_width)) u2 (.clk(baud_clk), .rst(sys_rst_l), .data_in(synch_in), .rec_readyH(rec_readyH), .rec_dataH(rec_dataH), .rec_busyH(rec_busy));
 
 endmodule
