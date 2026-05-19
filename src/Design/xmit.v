@@ -4,28 +4,28 @@ module xmit #(parameter data_width = 8, s0 = 0, s1 = 1, s2 = 2, s3 = 3)(baud_clk
   input wire [data_width - 1: 0] xmit_dataH;
   output reg uart_XMIT_dataH, xmit_doneH, xmit_active;
   
-  wire xmitH_pulse;
+ // wire xmitH_pulse;
 
   //registers
-  reg xmitH_d;
+  //reg xmitH_d;
   reg [data_width - 1 : 0] mem;
   reg [2:0] cnt;       
   reg [3:0] tick_cnt;  // Counts 16 baud_clk cycles per transmitted bit
   reg [1:0] cs, ns;
   
   // Edge detector for the start signal
-  assign xmitH_pulse = xmitH & ~xmitH_d;
+ // assign xmitH_pulse = xmitH & ~xmitH_d;
     
   always @(posedge baud_clk or negedge sys_rst_l) begin
     if(!sys_rst_l) begin // Reset all registers and counters
-      xmitH_d <= 0;
+    //  xmitH_d <= 0;
       mem <= 0;
       cs <= s0;
       cnt <= 0;
       tick_cnt <= 0;
     end
     else begin
-      xmitH_d <= xmitH; //edge detection for xmitH signal
+    //  xmitH_d <= xmitH; //edge detection for xmitH signal
       cs <= ns; // Update current state to next state on each clock cycle
 
      
@@ -37,7 +37,7 @@ module xmit #(parameter data_width = 8, s0 = 0, s1 = 1, s2 = 2, s3 = 3)(baud_clk
       end
 
       // Load memory on start pulse
-      if (cs == s0 && xmitH_pulse) begin
+      if (cs == s0 && xmitH) begin
         mem <= xmit_dataH;
       end
 
@@ -67,7 +67,7 @@ module xmit #(parameter data_width = 8, s0 = 0, s1 = 1, s2 = 2, s3 = 3)(baud_clk
         uart_XMIT_dataH = 1;
         xmit_doneH = 1;
         xmit_active = 0;
-        if(xmitH_pulse)
+        if(xmitH)
           ns = s1;
         else
           ns = s0;
