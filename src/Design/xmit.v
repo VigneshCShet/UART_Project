@@ -102,8 +102,10 @@ module xmit #(parameter data_width = 8, s0 = 0, s1 = 1, s2 = 2, s3 = 3)(baud_clk
         xmit_active = 1;
         
         
-        if(tick_cnt == 15)
+        if(tick_cnt == 15) begin
           ns = s0;
+          xmit_doneH = 1;
+        end
         else
           ns = s3;
       end
