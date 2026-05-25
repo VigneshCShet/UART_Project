@@ -4,35 +4,27 @@ module xmit #(parameter data_width = 8, s0 = 0, s1 = 1, s2 = 2, s3 = 3)(baud_clk
   input wire [data_width - 1: 0] xmit_dataH;
   output reg uart_XMIT_dataH, xmit_doneH, xmit_active;
   
-  //wire xmitH_pulse;
-
   //registers
- // reg xmitH_d;
   reg [data_width - 1 : 0] mem;
   reg [2:0] cnt;       
   reg [3:0] tick_cnt;  // Counts 16 baud_clk cycles per transmitted bit
   reg [1:0] cs, ns;
-  
-  // Edge detector for the start signal
-  //assign xmitH_pulse = xmitH & ~xmitH_d;
     
   always @(posedge baud_clk or negedge sys_rst_l) begin
     if(!sys_rst_l) begin // Reset all registers and counters
-    //  xmitH_d <= 0;
       mem <= 0;
       cs <= s0;
       cnt <= 0;
       tick_cnt <= 0;
     end
     else begin
-      //xmitH_d <= xmitH; //edge detection for xmitH signal
       cs <= ns; // Update current state to next state on each clock cycle
 
      
       if(cs != ns) begin
         tick_cnt <= 0;
       end
-      else if(tick_cnt == 15) begin
+      else if(tick_cnt >= 15) begin
         tick_cnt <= 0; // Reset tick counter at the end of each bit cell
       end
 
@@ -45,12 +37,11 @@ module xmit #(parameter data_width = 8, s0 = 0, s1 = 1, s2 = 2, s3 = 3)(baud_clk
         mem <= xmit_dataH;
       end
 
+      if (cs == s3 && xmitH && tick_cnt == 15) begin
+        mem <= xmit_dataH;
+      end
       
       if(cs != ns) begin // Reset bit counter on state change
-        /*if (ns == s2 && cs == s1) 
-          cnt <= 0; // Reset bit count when entering data state
-        else if (cs != s2)
-          cnt <= 0;*/
           cnt <= 0;
       end
       else if(tick_cnt == 15) begin
@@ -111,13 +102,11 @@ module xmit #(parameter data_width = 8, s0 = 0, s1 = 1, s2 = 2, s3 = 3)(baud_clk
           if(xmitH) begin
             ns = s1;
             xmit_doneH = 1;
-            mem = xmit_dataH;
           end
           else begin
             ns = s0;
             xmit_doneH = 1;
           end
-          
         end
         else
           ns = s3;
@@ -131,5 +120,4 @@ module xmit #(parameter data_width = 8, s0 = 0, s1 = 1, s2 = 2, s3 = 3)(baud_clk
       end
     endcase
   end
-  
 endmodule
