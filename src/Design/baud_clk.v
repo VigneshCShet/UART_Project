@@ -1,3 +1,4 @@
+`default_nettype none
 module baud_clk #(parameter baud_rate = 2400, clk_freq = 50000000)(clk, rst, clk_out);
   input wire clk, rst;
   output reg clk_out;
