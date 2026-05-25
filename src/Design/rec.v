@@ -23,7 +23,7 @@ module rec #(parameter data_width = 8, s0 = 0, s1 = 1, s2 = 2, s3 = 3)(clk, rst,
 
       if(cs != ns) // Reset tick counter on state change
         tick_cnt <= 0;
-      else if(tick_cnt == 15)  // Increment tick counter on each clock cycle within the same state
+      else if(tick_cnt >= 16)  // Increment tick counter on each clock cycle within the same state
         tick_cnt <= 0;
       else // Increment tick counter on each clock cycle within the same state
         tick_cnt <= tick_cnt + 1;
@@ -38,7 +38,7 @@ module rec #(parameter data_width = 8, s0 = 0, s1 = 1, s2 = 2, s3 = 3)(clk, rst,
         mem <= {data_in, mem[data_width - 1:1]};
         
       // Output data 
-      if(cs == s3 && tick_cnt == 15 && data_in == 1'b1) begin
+      if(cs == s3 && tick_cnt == 7 && data_in == 1'b1) begin
         rec_dataH <= mem;
       end
     end
@@ -63,28 +63,31 @@ module rec #(parameter data_width = 8, s0 = 0, s1 = 1, s2 = 2, s3 = 3)(clk, rst,
       
       s1: begin // Start bit 
         if(tick_cnt == 7) begin
+          if(data_in != 0)
+              ns = s0;
+          
+        end
+        if(tick_cnt == 15) begin
           if(data_in == 0)
-            ns = s2;
+            ns = s2; // Valid start bit, move to data reception
           else
             ns = s0; // False start, return to idle
         end
-        /*else begin
-          ns = s1;
-        end*/
       end
 
       s2: begin // Receiving data
         if(tick_cnt == 15 && cnt == data_width - 1)
           ns = s3;
-       /*else
-          ns = s2;*/
       end
 
       s3: begin // Stop bit 
-        if(tick_cnt == 15)
-          ns = s0; 
-        /*else
-          ns = s3;*/
+        if(tick_cnt == 15) begin
+          if(data_in == 1'b1)
+            ns = s0;
+          else
+            ns = s1; 
+        end
+       
       end
 
       default: begin // Default case to handle unexpected states
